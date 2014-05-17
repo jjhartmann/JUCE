@@ -471,8 +471,6 @@ private:
     }
 };
 
-
-
 //==============================================================================
 static ScopedPointer<ApplicationCommandManager> applicationCommandManager;
 static ScopedPointer<AudioDeviceManager> sharedAudioDeviceManager;
