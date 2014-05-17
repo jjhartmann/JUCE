@@ -265,6 +265,10 @@ public:
 
         setOpaque (true);
         setSize (640, 480);
+        
+        
+        AudioSampleBuffer buffer;
+        
     }
 
     ~AudioSynthesiserDemo()

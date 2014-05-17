@@ -115,6 +115,8 @@ public:
         {
             g.setFont (14.0f);
             g.drawFittedText ("(No audio file selected)", getLocalBounds(), Justification::centred, 2);
+            
+
         }
     }
 
@@ -323,9 +325,9 @@ public:
         startStopButton.setBounds (controls);
 
         r.removeFromBottom (6);
-        thumbnail->setBounds (r.removeFromBottom (140));
+        thumbnail->setBounds (r);
         r.removeFromBottom (6);
-        fileTreeComp.setBounds (r);
+       // fileTreeComp.setBounds (r);
     }
 
 private:
