@@ -32,19 +32,67 @@
 #include "jucer_ProjectExport_CodeBlocks.h"
 
 //==============================================================================
+static void addType (Array<ProjectExporter::ExporterTypeInfo>& list,
+                     const char* name, const void* iconData, int iconDataSize)
+{
+    ProjectExporter::ExporterTypeInfo type = { name, iconData, iconDataSize };
+    list.add (type);
+}
+
+Array<ProjectExporter::ExporterTypeInfo> ProjectExporter::getExporterTypes()
+{
+    Array<ProjectExporter::ExporterTypeInfo> types;
+
+    addType (types, XCodeProjectExporter::getNameMac(),             BinaryData::projectIconXcode_png,          BinaryData::projectIconXcode_pngSize);
+    addType (types, XCodeProjectExporter::getNameiOS(),             BinaryData::projectIconXcodeIOS_png,       BinaryData::projectIconXcodeIOS_pngSize);
+    addType (types, MSVCProjectExporterVC2015::getName(),           BinaryData::projectIconVisualStudio_png,   BinaryData::projectIconVisualStudio_pngSize);
+    addType (types, MSVCProjectExporterVC2013::getName(),           BinaryData::projectIconVisualStudio_png,   BinaryData::projectIconVisualStudio_pngSize);
+    addType (types, MSVCProjectExporterVC2012::getName(),           BinaryData::projectIconVisualStudio_png,   BinaryData::projectIconVisualStudio_pngSize);
+    addType (types, MSVCProjectExporterVC2010::getName(),           BinaryData::projectIconVisualStudio_png,   BinaryData::projectIconVisualStudio_pngSize);
+    addType (types, MSVCProjectExporterVC2008::getName(),           BinaryData::projectIconVisualStudio_png,   BinaryData::projectIconVisualStudio_pngSize);
+    addType (types, MSVCProjectExporterVC2005::getName(),           BinaryData::projectIconVisualStudio_png,   BinaryData::projectIconVisualStudio_pngSize);
+    addType (types, MakefileProjectExporter::getNameLinux(),        BinaryData::projectIconLinuxMakefile_png,  BinaryData::projectIconLinuxMakefile_pngSize);
+    addType (types, AndroidProjectExporter::getNameAndroid(),       BinaryData::projectIconAndroid_png,        BinaryData::projectIconAndroid_pngSize);
+    addType (types, CodeBlocksProjectExporter::getNameCodeBlocks(), BinaryData::projectIconCodeblocks_png,     BinaryData::projectIconCodeblocks_pngSize);
+
+    return types;
+}
+
+ProjectExporter* ProjectExporter::createNewExporter (Project& project, const int index)
+{
+    ProjectExporter* exp = nullptr;
+
+    switch (index)
+    {
+        case 0:     exp = new XCodeProjectExporter      (project, ValueTree (XCodeProjectExporter     ::getValueTreeTypeName (false)), false); break;
+        case 1:     exp = new XCodeProjectExporter      (project, ValueTree (XCodeProjectExporter     ::getValueTreeTypeName (true)), true); break;
+        case 2:     exp = new MSVCProjectExporterVC2015 (project, ValueTree (MSVCProjectExporterVC2015::getValueTreeTypeName())); break;
+        case 3:     exp = new MSVCProjectExporterVC2013 (project, ValueTree (MSVCProjectExporterVC2013::getValueTreeTypeName())); break;
+        case 4:     exp = new MSVCProjectExporterVC2012 (project, ValueTree (MSVCProjectExporterVC2012::getValueTreeTypeName())); break;
+        case 5:     exp = new MSVCProjectExporterVC2010 (project, ValueTree (MSVCProjectExporterVC2010::getValueTreeTypeName())); break;
+        case 6:     exp = new MSVCProjectExporterVC2008 (project, ValueTree (MSVCProjectExporterVC2012::getValueTreeTypeName())); break;
+        case 7:     exp = new MSVCProjectExporterVC2005 (project, ValueTree (MSVCProjectExporterVC2013::getValueTreeTypeName())); break;
+        case 8:     exp = new MakefileProjectExporter   (project, ValueTree (MakefileProjectExporter  ::getValueTreeTypeName())); break;
+        case 9:     exp = new AndroidProjectExporter    (project, ValueTree (AndroidProjectExporter   ::getValueTreeTypeName())); break;
+        case 10:    exp = new CodeBlocksProjectExporter (project, ValueTree (CodeBlocksProjectExporter::getValueTreeTypeName())); break;
+
+        default:    jassertfalse; return 0;
+    }
+
+    exp->createDefaultConfigs();
+    exp->createDefaultModulePaths();
+
+    return exp;
+}
+
 StringArray ProjectExporter::getExporterNames()
 {
     StringArray s;
-    s.add (XCodeProjectExporter::getNameMac());
-    s.add (XCodeProjectExporter::getNameiOS());
-    s.add (MSVCProjectExporterVC2005::getName());
-    s.add (MSVCProjectExporterVC2008::getName());
-    s.add (MSVCProjectExporterVC2010::getName());
-    s.add (MSVCProjectExporterVC2012::getName());
-    s.add (MSVCProjectExporterVC2013::getName());
-    s.add (MakefileProjectExporter::getNameLinux());
-    s.add (AndroidProjectExporter::getNameAndroid());
-    s.add (CodeBlocksProjectExporter::getNameCodeBlocks());
+    Array<ExporterTypeInfo> types (getExporterTypes());
+
+    for (int i = 0; i < types.size(); ++i)
+        s.add (types.getReference(i).name);
+
     return s;
 }
 
@@ -61,32 +109,6 @@ String ProjectExporter::getCurrentPlatformExporterName()
    #endif
 }
 
-ProjectExporter* ProjectExporter::createNewExporter (Project& project, const int index)
-{
-    ProjectExporter* exp = nullptr;
-
-    switch (index)
-    {
-        case 0:     exp = new XCodeProjectExporter      (project, ValueTree (XCodeProjectExporter     ::getValueTreeTypeName (false)), false); break;
-        case 1:     exp = new XCodeProjectExporter      (project, ValueTree (XCodeProjectExporter     ::getValueTreeTypeName (true)), true); break;
-        case 2:     exp = new MSVCProjectExporterVC2005 (project, ValueTree (MSVCProjectExporterVC2005::getValueTreeTypeName())); break;
-        case 3:     exp = new MSVCProjectExporterVC2008 (project, ValueTree (MSVCProjectExporterVC2008::getValueTreeTypeName())); break;
-        case 4:     exp = new MSVCProjectExporterVC2010 (project, ValueTree (MSVCProjectExporterVC2010::getValueTreeTypeName())); break;
-        case 5:     exp = new MSVCProjectExporterVC2012 (project, ValueTree (MSVCProjectExporterVC2012::getValueTreeTypeName())); break;
-        case 6:     exp = new MSVCProjectExporterVC2013 (project, ValueTree (MSVCProjectExporterVC2013::getValueTreeTypeName())); break;
-        case 7:     exp = new MakefileProjectExporter   (project, ValueTree (MakefileProjectExporter  ::getValueTreeTypeName())); break;
-        case 8:     exp = new AndroidProjectExporter    (project, ValueTree (AndroidProjectExporter   ::getValueTreeTypeName())); break;
-        case 9:     exp = new CodeBlocksProjectExporter (project, ValueTree (CodeBlocksProjectExporter::getValueTreeTypeName())); break;
-
-        default:    jassertfalse; return 0;
-    }
-
-    exp->createDefaultConfigs();
-    exp->createDefaultModulePaths();
-
-    return exp;
-}
-
 ProjectExporter* ProjectExporter::createNewExporter (Project& project, const String& name)
 {
     return createNewExporter (project, getExporterNames().indexOf (name));
@@ -99,6 +121,7 @@ ProjectExporter* ProjectExporter::createExporter (Project& project, const ValueT
     if (exp == nullptr)    exp = MSVCProjectExporterVC2010::createForSettings (project, settings);
     if (exp == nullptr)    exp = MSVCProjectExporterVC2012::createForSettings (project, settings);
     if (exp == nullptr)    exp = MSVCProjectExporterVC2013::createForSettings (project, settings);
+    if (exp == nullptr)    exp = MSVCProjectExporterVC2015::createForSettings (project, settings);
     if (exp == nullptr)    exp = XCodeProjectExporter     ::createForSettings (project, settings);
     if (exp == nullptr)    exp = MakefileProjectExporter  ::createForSettings (project, settings);
     if (exp == nullptr)    exp = AndroidProjectExporter   ::createForSettings (project, settings);
@@ -123,6 +146,7 @@ bool ProjectExporter::canProjectBeLaunched (Project* project)
             MSVCProjectExporterVC2010::getValueTreeTypeName(),
             MSVCProjectExporterVC2012::getValueTreeTypeName(),
             MSVCProjectExporterVC2013::getValueTreeTypeName(),
+            MSVCProjectExporterVC2015::getValueTreeTypeName(),
            #elif JUCE_LINUX
             // (this doesn't currently launch.. not really sure what it would do on linux)
             //MakefileProjectExporter::getValueTreeTypeName(),
@@ -172,7 +196,8 @@ RelativePath ProjectExporter::rebaseFromProjectFolderToBuildTarget (const Relati
 
 bool ProjectExporter::shouldFileBeCompiledByDefault (const RelativePath& file) const
 {
-    return file.hasFileExtension ("cpp;cc;c;cxx;s");
+    return file.hasFileExtension (cOrCppFileExtensions)
+        || file.hasFileExtension (asmFileExtensions);
 }
 
 void ProjectExporter::createPropertyEditors (PropertyListBuilder& props)

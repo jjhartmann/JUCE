@@ -179,6 +179,11 @@ String URL::toString (const bool includeGetParameters) const
     return url;
 }
 
+bool URL::isEmpty() const noexcept
+{
+    return url.isEmpty();
+}
+
 bool URL::isWellFormed() const
 {
     //xxx TODO
@@ -241,8 +246,6 @@ void URL::createHeadersAndPostData (String& headers, MemoryBlock& headersAndPost
 {
     MemoryOutputStream data (headersAndPostData, false);
 
-    data << URLHelpers::getMangledParameters (*this);
-
     if (filesToUpload.size() > 0)
     {
         // (this doesn't currently support mixing custom post-data with uploads..)
@@ -285,7 +288,8 @@ void URL::createHeadersAndPostData (String& headers, MemoryBlock& headersAndPost
     }
     else
     {
-        data << postData;
+        data << URLHelpers::getMangledParameters (*this)
+             << postData;
 
         // if the user-supplied headers didn't contain a content-type, add one now..
         if (! headers.containsIgnoreCase ("Content-Type"))
